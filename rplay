@@ -1,0 +1,603 @@
+
+
+
+
+
+# While repite el bucle en cada iteracción.
+
+while true;
+
+do
+
+
+echo ""
+
+
+ # clear limpia e elimina en pantalla e inicia reproductor offline.
+
+rm -r lista3_busqueda.txt
+rm -r lista_musica.txt
+
+clear
+echo ""
+echo -e "\033[30;47m REPRODUCTOR DE AUDIO \033[0m | based on play-audio"
+echo ""
+echo ""
+
+
+# Opciones menu y en termux con reproductor offline.
+
+
+echo -e "Salir/Stop: [pkill -9 play-audio] | [CTRL+C ó Z] | opción 4"
+echo ""
+echo "Minimizar: [CTRL+Z][No disponible para reproduccion de listas]"
+echo ""
+echo "Cerrar 2° plano: Comando fg + CTRL+C | opción 4"
+echo ""
+echo "Salir: [CTRL+C ó Z] | [opción 4 ó 5] | [pkill -9 play-audio]"
+echo ""
+echo ""
+
+
+# Opciones menu repeoductoe offline
+
+
+echo "[1] Reproducir musica con digitación alfabetica"
+echo ""
+echo "[2] Reproducir musica con indice numerico"
+echo ""
+echo "[3] Reproducir directorios"
+echo ""
+echo "[4] Listar directorio shared"
+echo ""
+echo "[5] Detemer reproducción"
+echo ""
+echo "[6] Salir"
+echo ""
+read -p "[-] Digite selección: " -e slc
+
+
+
+
+# Digitación sin caracteres o digitaciones null.
+
+
+
+
+if [[ -z ${slc} ]]
+
+
+then
+
+
+echo ""
+echo ""
+
+echo -e "[ERROR | Digitación sin caracteres]"
+
+
+echo ""
+
+exit
+
+fi
+
+
+
+
+# Case es utilizado para establecer un menu del reproductor offline.
+
+
+
+
+case $slc in
+
+
+
+1)
+
+echo ""
+echo ""
+echo ""
+echo "[-] Selección musical"
+echo ""
+echo ""
+read -p "Digite canción: " -e busqueda
+
+
+
+
+
+
+
+
+url_path="/data/data/com.termux/files/home/storage/downloads"
+
+
+
+echo ""
+archivos_encontrados=$(ls $url_path | grep ".mp3")
+
+echo "$archivos_encontrados" > lista_busqueda.txt
+
+
+archivo_encontrado=$(grep -i "$busqueda" lista_busqueda.txt)
+
+# rm elimina archivo de texto creado que contenia la lista de busqueda
+
+rm -r lista_busqueda.txt
+
+
+
+
+
+
+
+
+
+# Sentencia de verificación de caracteres y entradas, y reproducción.
+
+
+if [[ "$busqueda" =~ ^[[:alpha:]] ]]; then
+  
+
+echo ""
+echo "Reproduciendo: $archivo_encontrado"
+echo ""
+play-audio "/data/data/com.termux/files/home/storage/downloads/$archivo_encontrado"
+
+echo ""
+
+
+echo "[Fin de la reproducción]"
+
+
+
+echo ""
+
+
+
+
+else
+
+
+echo ""
+echo "[Canción no encontrada]"
+sleep 2
+echo ""
+
+
+fi
+
+
+
+
+
+
+;;
+
+2)
+
+echo ""
+
+
+
+
+echo ""
+echo ""
+
+
+echo "[-] Selección de directorio"
+
+echo ""
+echo ""
+
+echo "[-] Ubicación: /storage"
+
+echo ""
+echo ""
+echo "[-] Ejemplo: downloads | shared/directorios-memoria-interna"
+
+echo ""
+
+
+
+
+# Entrada para ditación externa de directorio
+
+
+echo ""
+read -p "[-] Directorio: " -e nombre_directorio
+
+
+
+
+
+url_path="/data/data/com.termux/files/home/storage/$nombre_directorio"
+
+
+
+
+
+archivos_encontrados=$(ls $url_path | grep ".mp3")
+
+
+
+lista_busqueda=$(mktemp)
+
+
+
+
+echo "$archivos_encontrados" > $lista_busqueda
+
+lista_archivos_encontrados=$(cat $lista_busqueda)
+
+
+
+echo "$lista_archivos_encontrados" >> lista_musica.txt
+
+
+echo ""
+echo ""
+
+
+echo "[-] Lista de musica"
+echo ""
+echo ""
+
+
+
+
+
+while IFS= read -r cancion; do
+
+
+
+
+numero_cancion=$(($numero_cancion + 1))
+
+
+
+echo -e "\n$numero_cancion. ${cancion[@]}"
+
+
+done < lista_musica.txt
+
+
+
+
+echo ""
+echo ""
+
+
+
+echo "Cantidad de canciones: $numero_cancion"
+
+
+echo ""
+
+echo ""
+echo ""
+
+
+echo "[-] Selección de musica:"
+
+echo ""
+echo ""
+echo ""
+
+read -p "[-] Digite numero de canción: " -e numero
+
+
+cancion_lista=$(sed -n $numero'p' lista_musica.txt)
+
+echo ""
+echo ""
+echo ""
+echo "💽 Reproduciendo: "
+echo ""
+echo ""
+echo "$cancion_lista"
+
+
+
+play-audio "/data/data/com.termux/files/home/storage/$nombre_directorio/$cancion_lista"
+
+
+
+
+
+
+
+# Eliminación de variable
+
+
+
+
+rm -r lista_musica.txt
+
+unset -v numero_cancion
+unset -v cancion
+unset -v cancion_lista
+unset -v lista_busqueda
+
+
+
+
+echo ""
+echo ""
+
+
+
+echo ""
+
+
+
+
+
+# Read con Enter devuelve a menú
+
+
+
+read -p "[Oprima 'Enter' para volver a menú]"
+echo ""
+echo ""
+
+
+
+
+
+
+;;
+
+
+3)
+
+
+
+
+echo ""
+
+echo ""
+
+echo "[-] Reproducción de lista de musica"
+echo ""
+echo ""
+
+
+
+echo "[-] Ejemplo: downloads | shared/lista-rock"
+
+echo ""
+
+
+
+
+# Entrada para ditación externa de directorio
+
+
+echo ""
+read -p "[-] Directorio: " -e nombre_directorio
+
+
+
+
+# Sentencia para digitaciones sin caracteres e errores de digitación null.
+
+
+
+if [[ -z ${nombre_directorio} ]]
+then
+
+echo ""
+echo ""
+
+
+echo "[ERROR | Digitación sin caracteres]"
+
+
+echo ""
+
+
+exit
+
+fi
+
+
+
+
+
+
+######### Procesamiento de lista e analisis de archivos #######
+#
+
+
+archivos_mp3_encontrados=$(ls "/data/data/com.termux/files/home/storage/$nombre_directorio" | grep ".mp3")
+
+
+
+
+# Translado requerible para gestionar el listado encontrado con WHILE y READ.
+
+echo "$archivos_mp3_encontrados" > lista3_busqueda.txt
+
+
+
+
+
+
+
+#
+######### Procesamiento de lista e analisis de archivos #######
+
+
+
+######### Lectura de archivos listados #######################
+#
+
+
+# El Bucle While repite la secuencia de reprodución.
+# Read lee linea a linea cada linea del listado en $lista_busqueda.
+# Read en cada ciclo dél bucle While lee e imprime cada linea.
+# Read termina de  leer hasta la ultima linea.
+# While termina de repdoucir cuando la ultima linea.
+# While termina de ejecutarse y se imprime el fin de reproducción.
+
+while IFS= read -r cancion; do
+
+
+
+echo -e "\nReproduciendo: $cancion"
+
+
+
+# Paquete play-audio reproduce la url con directorio dé lista de audio MP3
+
+play-audio "/data/data/com.termux/files/home/storage/$nombre_directorio/${cancion[@]}"
+
+
+done < lista3_busqueda.txt
+
+echo ""
+echo ""
+
+
+echo "[Fin de reproducción de lista]"
+
+
+
+# Eliminación de lista de busqueda
+
+rm -r lista3_busqueda.txt
+#
+######### Lectura de archivos listados #######################
+
+
+
+;;
+
+
+
+
+4)
+
+
+echo ""
+
+
+
+echo ""
+
+
+echo "[-] Lista de directorios shared:"
+
+
+echo ""
+
+echo ""
+
+
+
+
+url_ruta=$(pwd)
+
+
+cd /data/data/com.termux/files/home/storage/shared
+
+ls /data/data/com.termux/files/home/storage/shared
+
+cd $url_ruta
+
+
+unset -v url_ruta
+
+
+
+
+echo ""
+echo ""
+
+
+
+exit
+
+
+;;
+
+
+
+
+
+
+
+5)
+
+
+
+# El comando pkill con -9 cierra todos los procesos de play-audio
+
+###### Detención de musica y lista de musica ######
+#
+
+pkill -9 play-audio
+
+
+
+#
+###### Detención de musica y lista de musica ######
+
+
+
+
+
+
+;;
+
+
+
+
+6)
+
+
+
+echo ""
+echo ""
+
+
+
+
+echo "[Saliendo de Reproductor de musica]"
+
+
+
+
+echo ""
+
+
+
+
+# Exit detiene Shell sctipt de reproductor offline con digitación.
+
+
+
+exit
+
+
+
+;;
+
+*) echo ""
+
+
+# Repite menu en digitaciones que no estan en indice de case y si son null.
+
+;;
+
+esac
+
+
+
+
+done
+
+
